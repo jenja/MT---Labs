@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
@@ -78,6 +80,30 @@ public class ItemDetailActivity extends AppCompatActivity {
             NavUtils.navigateUpTo(this, new Intent(this, ItemListActivity.class));
             return true;
         }
-        return super.onOptionsItemSelected(item);
+
+        switch (item.getItemId()) {
+            case R.id.help:
+                deleteItem();
+                return true;
+            case R.id.sorting:
+                editItem();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.options_menu_item, menu);
+        return true;
+    }
+
+    //Implement
+
+    public void deleteItem() {}
+
+    public void editItem() {}
+
 }
