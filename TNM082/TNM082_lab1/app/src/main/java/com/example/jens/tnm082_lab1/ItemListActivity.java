@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -18,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 
@@ -47,7 +49,7 @@ public class ItemListActivity extends AppCompatActivity {
      */
     private boolean mTwoPane;
     private ActionMode mActionMode;
-    private Datasource DS;
+    private Datasource mDS;
     private ArrayList<Item> mArrayList;
 
     private boolean ascending = true;
@@ -75,10 +77,15 @@ public class ItemListActivity extends AppCompatActivity {
             }
         });
 
-        openDB();
-        DS.insertItem("banan", 1, "gul");
-        DS.insertItem("ost", 2, "hål");
-        closeDB();
+        //TEST
+        //------------------------------------------------------
+        //openDB();
+        mDS = new Datasource(this);
+        mDS.open();
+        //mDS.insertItem("banan", 1, "gul");
+        //mDS.insertItem("ost", 2, "hål");
+        //closeDB();
+        //------------------------------------------------------
 
         View recyclerView = findViewById(R.id.item_list);
         assert recyclerView != null;
@@ -97,7 +104,7 @@ public class ItemListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter());
+        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(mDS.fetchAll(1,true)));
     }
 
     @Override
@@ -144,11 +151,10 @@ public class ItemListActivity extends AppCompatActivity {
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
         //private final List<DummyContent.DummyItem> mValues;
+        private final List<Item> mValues;
 
-        public SimpleItemRecyclerViewAdapter() {
-            openDB();
-            mArrayList = DS.fetchAll(1, ascending);
-            closeDB();
+        public SimpleItemRecyclerViewAdapter(List<Item> items) {
+            mValues = items;
         }
 
         @Override
@@ -161,7 +167,7 @@ public class ItemListActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.mItem = mValues.get(position);
-            holder.mIdView.setText(mValues.get(position).id);
+            holder.mIdView.setText("" + mValues.get(position).id);
             holder.mContentView.setText(mValues.get(position).content);
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -169,7 +175,15 @@ public class ItemListActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
-                        arguments.putString(ItemDetailFragment.ARG_ITEM_ID, holder.mItem.id);
+
+                        arguments.putString(ItemDetailFragment.ARG_ITEM_ID, holder.mItem.getId());
+
+                        arguments.putString(ItemDetailFragment.ARG_ITEM_TITLE, holder.mItem.getTitle());
+
+                        arguments.putString(ItemDetailFragment.ARG_ITEM_DESCRIPTION, holder.mItem.getDescription());
+
+                        arguments.putString(ItemDetailFragment.ARG_ITEM_RATING, holder.mItem.getRating());
+
                         ItemDetailFragment fragment = new ItemDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
@@ -181,7 +195,14 @@ public class ItemListActivity extends AppCompatActivity {
                     } else {
                         Context context = v.getContext();
                         Intent intent = new Intent(context, ItemDetailActivity.class);
-                        intent.putExtra(ItemDetailFragment.ARG_ITEM_ID, holder.mItem.id);
+
+                        intent.putExtra(ItemDetailFragment.ARG_ITEM_ID, holder.mItem.getId());
+
+                        intent.putExtra(ItemDetailFragment.ARG_ITEM_TITLE, holder.mItem.getTitle());
+
+                        intent.putExtra(ItemDetailFragment.ARG_ITEM_TITLE, holder.mItem.getDescription());
+
+                        intent.putExtra(ItemDetailFragment.ARG_ITEM_TITLE, holder.mItem.getRating());
 
                         context.startActivity(intent);
                     }
@@ -198,7 +219,7 @@ public class ItemListActivity extends AppCompatActivity {
             public final View mView;
             public final TextView mIdView;
             public final TextView mContentView;
-            public DummyContent.DummyItem mItem;
+            public Item mItem;
 
             public ViewHolder(View view) {
                 super(view);
@@ -262,12 +283,12 @@ public class ItemListActivity extends AppCompatActivity {
     };
 
     private void openDB(){
-        DS = new Datasource(this);
-        DS.open();
+        mDS = new Datasource(this);
+        mDS.open();
     }
 
     private void closeDB(){
-        DS.close();
+        mDS.close();
     }
 
 }
