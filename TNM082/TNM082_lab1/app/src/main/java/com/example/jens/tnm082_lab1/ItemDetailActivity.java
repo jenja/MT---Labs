@@ -57,18 +57,18 @@ public class ItemDetailActivity extends AppCompatActivity {
             // using a fragment transaction.
             Bundle arguments = new Bundle();
 
-            //Send
+            //Send items
             arguments.putString(ItemDetailFragment.ARG_ITEM_ID,
                     getIntent().getStringExtra(ItemDetailFragment.ARG_ITEM_ID));
 
-            arguments.putString(ItemDetailFragment.ARG_ITEM_ID,
+            arguments.putString(ItemDetailFragment.ARG_ITEM_TITLE,
                     getIntent().getStringExtra(ItemDetailFragment.ARG_ITEM_TITLE));
 
-            arguments.putString(ItemDetailFragment.ARG_ITEM_ID,
+            arguments.putString(ItemDetailFragment.ARG_ITEM_DESCRIPTION,
                     getIntent().getStringExtra(ItemDetailFragment.ARG_ITEM_DESCRIPTION));
 
-            arguments.putString(ItemDetailFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(ItemDetailFragment.ARG_ITEM_RATING, -1));
+            arguments.putString(ItemDetailFragment.ARG_ITEM_RATING,
+                    getIntent().getStringExtra(ItemDetailFragment.ARG_ITEM_RATING));
 
 
             ItemDetailFragment fragment = new ItemDetailFragment();

@@ -150,7 +150,6 @@ public class ItemListActivity extends AppCompatActivity {
     public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
-        //private final List<DummyContent.DummyItem> mValues;
         private final List<Item> mValues;
 
         public SimpleItemRecyclerViewAdapter(List<Item> items) {
@@ -168,7 +167,7 @@ public class ItemListActivity extends AppCompatActivity {
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.mItem = mValues.get(position);
             holder.mIdView.setText("" + mValues.get(position).id);
-            holder.mContentView.setText(mValues.get(position).content);
+            holder.mContentView.setText(mValues.get(position).getDescription());
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -176,13 +175,13 @@ public class ItemListActivity extends AppCompatActivity {
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
 
-                        arguments.putString(ItemDetailFragment.ARG_ITEM_ID, holder.mItem.getId());
+                        arguments.putString(ItemDetailFragment.ARG_ITEM_ID, "" + holder.mItem.getId());
 
                         arguments.putString(ItemDetailFragment.ARG_ITEM_TITLE, holder.mItem.getTitle());
 
                         arguments.putString(ItemDetailFragment.ARG_ITEM_DESCRIPTION, holder.mItem.getDescription());
 
-                        arguments.putString(ItemDetailFragment.ARG_ITEM_RATING, holder.mItem.getRating());
+                        arguments.putString(ItemDetailFragment.ARG_ITEM_RATING, "" + holder.mItem.getRating());
 
                         ItemDetailFragment fragment = new ItemDetailFragment();
                         fragment.setArguments(arguments);
@@ -200,9 +199,9 @@ public class ItemListActivity extends AppCompatActivity {
 
                         intent.putExtra(ItemDetailFragment.ARG_ITEM_TITLE, holder.mItem.getTitle());
 
-                        intent.putExtra(ItemDetailFragment.ARG_ITEM_TITLE, holder.mItem.getDescription());
+                        intent.putExtra(ItemDetailFragment.ARG_ITEM_DESCRIPTION, holder.mItem.getDescription());
 
-                        intent.putExtra(ItemDetailFragment.ARG_ITEM_TITLE, holder.mItem.getRating());
+                        intent.putExtra(ItemDetailFragment.ARG_ITEM_RATING, holder.mItem.getRating());
 
                         context.startActivity(intent);
                     }
@@ -278,7 +277,7 @@ public class ItemListActivity extends AppCompatActivity {
         // Called when the user exits the action mode
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-            //mActionMode = null;
+            mActionMode = null;
         }
     };
 

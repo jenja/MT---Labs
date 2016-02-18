@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,12 +27,19 @@ public class ItemDetailFragment extends Fragment {
      * represents.
      */
     public static final String ARG_ITEM_ID = "item_id";
+    public static final String ARG_ITEM_TITLE = "item_title";
+    public static final String ARG_ITEM_DESCRIPTION = "item_description";
+    public static final String ARG_ITEM_RATING = "item_rating";
 
     /**
      * The dummy content this fragment is presenting.
      */
-    private DummyContent.DummyItem mItem;
+    //private DummyContent.DummyItem mItem;
 
+    String ItemId = "failed to load";
+    String ItemTitle = "failed to load";
+    String ItemDescription = "failed to load";
+    int ItemRating = -1;
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -45,17 +53,27 @@ public class ItemDetailFragment extends Fragment {
 
         hasOptionsMenu();
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-            // Load the dummy content specified by the fragment
-            // arguments. In a real-world scenario, use a Loader
-            // to load content from a content provider.
-            mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
+        /*if (getArguments().containsKey(ARG_ITEM_ID)) {
+            //mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
+
+            ItemId = getArguments().getString(ARG_ITEM_ID);
 
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null) {
                 appBarLayout.setTitle(mItem.content);
             }
+        }*/
+
+        if(getArguments().containsKey(ARG_ITEM_ID)){ItemTitle = getArguments().getString(ARG_ITEM_ID);}
+        if(getArguments().containsKey(ARG_ITEM_TITLE)){ItemTitle = getArguments().getString(ARG_ITEM_TITLE);}
+        if(getArguments().containsKey(ARG_ITEM_DESCRIPTION)){ItemDescription= getArguments().getString(ARG_ITEM_DESCRIPTION);}
+        if(getArguments().containsKey(ARG_ITEM_RATING)){ItemRating = getArguments().getInt(ARG_ITEM_RATING);}
+
+        Activity activity = this.getActivity();
+        CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
+        if (appBarLayout != null) {
+            appBarLayout.setTitle(ItemTitle);
         }
     }
 
@@ -65,8 +83,8 @@ public class ItemDetailFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.item_detail, container, false);
 
         // Show the dummy content as text in a TextView.
-        if (mItem != null) {
-            ((TextView) rootView.findViewById(R.id.item_detail)).setText(mItem.details);
+        if (ItemDescription != null) {
+            ((TextView) rootView.findViewById(R.id.item_detail)).setText(ItemDescription);
         }
 
         return rootView;
