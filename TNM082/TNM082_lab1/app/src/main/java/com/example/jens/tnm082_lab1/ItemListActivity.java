@@ -22,11 +22,13 @@ import android.widget.TextView;
 
 
 import com.example.jens.tnm082_lab1.database.Datasource;
+import com.example.jens.tnm082_lab1.database.Item;
 import com.example.jens.tnm082_lab1.dummy.DummyContent;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,6 +46,11 @@ public class ItemListActivity extends AppCompatActivity {
      * device.
      */
     private boolean mTwoPane;
+    private ActionMode mActionMode;
+    private Datasource DS;
+    private ArrayList<Item> mArrayList;
+
+    private boolean ascending = true;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -68,6 +75,11 @@ public class ItemListActivity extends AppCompatActivity {
             }
         });
 
+        openDB();
+        DS.insertItem("banan", 1, "gul");
+        DS.insertItem("ost", 2, "hål");
+        closeDB();
+
         View recyclerView = findViewById(R.id.item_list);
         assert recyclerView != null;
         setupRecyclerView((RecyclerView) recyclerView);
@@ -85,7 +97,7 @@ public class ItemListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(DummyContent.ITEMS));
+        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter());
     }
 
     @Override
@@ -131,10 +143,12 @@ public class ItemListActivity extends AppCompatActivity {
     public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
-        private final List<DummyContent.DummyItem> mValues;
+        //private final List<DummyContent.DummyItem> mValues;
 
-        public SimpleItemRecyclerViewAdapter(List<DummyContent.DummyItem> items) {
-            mValues = items;
+        public SimpleItemRecyclerViewAdapter() {
+            openDB();
+            mArrayList = DS.fetchAll(1, ascending);
+            closeDB();
         }
 
         @Override
@@ -161,6 +175,9 @@ public class ItemListActivity extends AppCompatActivity {
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.item_detail_container, fragment)
                                 .commit();
+
+                        mActionMode = startActionMode(mActionModeCallback);
+
                     } else {
                         Context context = v.getContext();
                         Intent intent = new Intent(context, ItemDetailActivity.class);
@@ -243,5 +260,14 @@ public class ItemListActivity extends AppCompatActivity {
             //mActionMode = null;
         }
     };
+
+    private void openDB(){
+        DS = new Datasource(this);
+        DS.open();
+    }
+
+    private void closeDB(){
+        DS.close();
+    }
 
 }
