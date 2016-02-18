@@ -7,16 +7,12 @@
         android:title="@string/add"
         app:showAsAction="ifRoom"/>
 
-    <item android:id="@+id/options"
-        android:icon="@android:drawable/ic_menu_agenda"
-        android:title="@string/options">
-        <menu>
-            <item android:id="@+id/help"
-                android:title="@string/help"></item>
-            <item android:id="@+id/sorting"
-                android:title="@string/sorting"></item>
-            <item android:id="@+id/ascending_order"
-                android:title="@string/ascending_order"></item>
-        </menu>
-    </item>
+    <item android:id="@+id/help"
+        android:title="@string/help"></item>
+    <item android:id="@+id/sorting"
+        android:title="@string/sorting"></item>
+    <item android:id="@+id/ascending_order"
+        android:title="@string/ascending_order"></item>
+
+
 </menu>

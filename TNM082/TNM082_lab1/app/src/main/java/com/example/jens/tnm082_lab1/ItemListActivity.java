@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -202,29 +203,44 @@ public class ItemListActivity extends AppCompatActivity {
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.help:
-                helpList();
-                return true;
-            case R.id.sorting:
-                sortList();
-                return true;
-            case R.id.ascending_order:
-                sortAscending();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+    private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+
+        // Called when the action mode is created; startActionMode() was called
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            // Inflate a menu resource providing context menu items
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.options_menu_item, menu);
+            return true;
         }
-    }
 
-    //Implement
+        // Called each time the action mode is shown. Always called after onCreateActionMode, but
+        // may be called multiple times if the mode is invalidated.
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false; // Return false if nothing is done
+        }
 
-    public void helpList() {}
+        // Called when the user selects a contextual menu item
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.edit_item:
+                    //shareCurrentItem();
+                    mode.finish(); // Action picked, so close the CAB
+                    return true;
+                case R.id.delete_item:
+                    return true;
+                default:
+                    return false;
+            }
+        }
 
-    public void sortList() {}
+        // Called when the user exits the action mode
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            //mActionMode = null;
+        }
+    };
 
-    public void sortAscending() {}
 }
