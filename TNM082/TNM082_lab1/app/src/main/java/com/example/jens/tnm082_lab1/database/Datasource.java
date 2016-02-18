@@ -1,4 +1,4 @@
-package com.agilen.perli.myapplication.database;
+package com.example.jens.tnm082_lab1.database;
 
 import android.content.ContentValues;
 import android.content.Context;
