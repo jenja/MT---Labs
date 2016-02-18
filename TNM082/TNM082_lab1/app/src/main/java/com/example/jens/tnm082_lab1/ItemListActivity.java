@@ -3,8 +3,10 @@ package com.example.jens.tnm082_lab1;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -104,7 +106,7 @@ public class ItemListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(mDS.fetchAll(1,true)));
+        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(mDS.fetchAll(1, true)));
     }
 
     @Override
@@ -235,6 +237,37 @@ public class ItemListActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            // This ID represents the Home or Up button. In the case of this
+            // activity, the Up button is shown. Use NavUtils to allow users
+            // to navigate up one level in the application structure. For
+            // more details, see the Navigation pattern on Android Design:
+            //
+            // http://developer.android.com/design/patterns/navigation.html#up-vs-back
+            //
+            NavUtils.navigateUpTo(this, new Intent(this, ItemListActivity.class));
+            return true;
+        }
+
+        switch (item.getItemId()) {
+            case R.id.add:
+
+                View recyclerView = findViewById(R.id.item_list);
+
+                Log.d("TAG", "add item");
+                mDS.insertItem("Scream", 1, "Horror movie");
+
+                assert recyclerView != null;
+                setupRecyclerView((RecyclerView) recyclerView);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.optionsmenu, menu);
@@ -263,11 +296,14 @@ public class ItemListActivity extends AppCompatActivity {
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
-                case R.id.edit_item:
+                case R.id.add:
                     //shareCurrentItem();
-                    mode.finish(); // Action picked, so close the CAB
-                    return true;
-                case R.id.delete_item:
+                    //mode.finish(); // Action picked, so close the CAB
+                    //Log.d("TAG", "add item");
+
+                    View recyclerView = findViewById(R.id.item_list);
+
+                    mDS.insertItem("Scream", 1, "Horror movie");
                     return true;
                 default:
                     return false;

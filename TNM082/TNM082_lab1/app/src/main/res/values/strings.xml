@@ -8,4 +8,5 @@
     <string name="options">Options</string>
     <string name="sorting">Sorting</string>
     <string name="ascending_order">Ascending Order</string>
+    <string name="rate">rate</string>
 </resources>
