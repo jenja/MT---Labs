@@ -1,10 +1,12 @@
 package com.example.jens.tnm082_lab1;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -20,6 +22,8 @@ import android.view.MenuItem;
  * in a {@link ItemListActivity}.
  */
 public class ItemDetailActivity extends AppCompatActivity {
+
+    private long itemID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +62,13 @@ public class ItemDetailActivity extends AppCompatActivity {
             Bundle arguments = new Bundle();
 
             //Send items
-            arguments.putString(ItemDetailFragment.ARG_ITEM_ID,
+            /*arguments.putString(ItemDetailFragment.ARG_ITEM_ID,
                     getIntent().getStringExtra(ItemDetailFragment.ARG_ITEM_ID));
+            */
+            itemID = getIntent().getLongExtra(ItemDetailFragment.ARG_ITEM_ID, 0);
+                        Log.d("TAG", "1: itemId is: " + String.valueOf(itemID));
+
+            arguments.putLong(ItemDetailFragment.ARG_ITEM_ID, itemID);
 
             arguments.putString(ItemDetailFragment.ARG_ITEM_TITLE,
                     getIntent().getStringExtra(ItemDetailFragment.ARG_ITEM_TITLE));
@@ -94,16 +103,16 @@ public class ItemDetailActivity extends AppCompatActivity {
             return true;
         }
 
-        switch (item.getItemId()) {
-            case R.id.help:
-                deleteItem();
-                return true;
-            case R.id.sorting:
-                editItem();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if(id == R.id.delete_item){
+            Log.d("TAG", "delete is pushed");
+            Log.d("TAG", "2: itemId is: " + String.valueOf(itemID));
+            Intent intent = new Intent();
+            intent.putExtra(ItemDetailFragment.ARG_ITEM_ID, itemID);
+            setResult(Activity.RESULT_OK, intent);
+            finish();
+            deleteItem();
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -115,7 +124,9 @@ public class ItemDetailActivity extends AppCompatActivity {
 
     //Implement
 
-    public void deleteItem() {}
+    public void deleteItem() {
+
+    }
 
     public void editItem() {}
 

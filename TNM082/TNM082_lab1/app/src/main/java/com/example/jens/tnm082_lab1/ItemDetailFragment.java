@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.jens.tnm082_lab1.database.Item;
 import com.example.jens.tnm082_lab1.dummy.DummyContent;
 
 /**
@@ -40,6 +41,7 @@ public class ItemDetailFragment extends Fragment {
     String ItemTitle = "failed to load";
     String ItemDescription = "failed to load";
     int ItemRating = -1;
+    private Item mItem;
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -75,6 +77,27 @@ public class ItemDetailFragment extends Fragment {
         if (appBarLayout != null) {
             appBarLayout.setTitle(ItemTitle);
         }
+        /*
+        mItem = new Item();
+
+        if (getArguments().containsKey(ARG_ITEM_ID)) {
+
+            Long argID = getArguments().getLong(ARG_ITEM_ID, 0);
+            String argTitle = getArguments().getString(ARG_ITEM_TITLE);
+            String argDescription = getArguments().getString(ARG_ITEM_DESCRIPTION);
+            int argRating = getArguments().getInt(ARG_ITEM_RATING);
+
+            mItem.setId(argID);
+            mItem.setTitle(argTitle);
+            mItem.setDescription(argDescription);
+            mItem.setRating(argRating);
+
+            Activity activity = this.getActivity();
+            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
+            if (appBarLayout != null) {
+                appBarLayout.setTitle(ItemTitle);
+            }
+        }*/
     }
 
     @Override

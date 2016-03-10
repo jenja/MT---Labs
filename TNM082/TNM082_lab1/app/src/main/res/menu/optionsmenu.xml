@@ -10,9 +10,32 @@
     <item android:id="@+id/help"
         android:title="@string/help"></item>
     <item android:id="@+id/sorting"
-        android:title="@string/sorting"></item>
-    <item android:id="@+id/ascending_order"
-        android:title="@string/ascending_order"></item>
+    android:title="@string/sorting">
+    <menu>
 
+
+            <item
+                android:id="@+id/sort_id"
+                android:checked="true"
+                android:checkable="true"
+                android:title="@string/_id" />
+            <item
+                android:id="@+id/sort_title"
+                android:checkable="true"
+                android:checked="false"
+                android:title="@string/title" />
+            <item
+                android:id="@+id/sort_rating"
+                android:checked="false"
+                android:checkable="true"
+                android:title="@string/rating" />
+
+    </menu>
+</item>
+    <item android:id="@+id/ascending_order"
+        android:title="@string/ascending_order"
+        android:checked="true"
+        android:checkable="true">
+    </item>
 
 </menu>

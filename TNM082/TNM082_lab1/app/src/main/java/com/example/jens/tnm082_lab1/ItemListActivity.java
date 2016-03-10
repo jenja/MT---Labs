@@ -1,5 +1,6 @@
 package com.example.jens.tnm082_lab1;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -34,6 +35,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * An activity representing a list of Items. This activity
@@ -53,6 +55,12 @@ public class ItemListActivity extends AppCompatActivity {
     private ActionMode mActionMode;
     private Datasource mDS;
     private ArrayList<Item> mArrayList;
+    private SimpleItemRecyclerViewAdapter mAdapter;
+    private long mActivatedPosition;
+    private ItemDetailFragment fragment;
+    View recyclerView;
+    private int col;
+    private boolean asc;
 
     private boolean ascending = true;
     /**
@@ -91,7 +99,7 @@ public class ItemListActivity extends AppCompatActivity {
 
         View recyclerView = findViewById(R.id.item_list);
         assert recyclerView != null;
-        setupRecyclerView((RecyclerView) recyclerView);
+        setupRecyclerView((RecyclerView) recyclerView, 1, true);
 
         if (findViewById(R.id.item_detail_container) != null) {
             // The detail container view will be present only in the
@@ -105,8 +113,10 @@ public class ItemListActivity extends AppCompatActivity {
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
-    private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(mDS.fetchAll(1, true)));
+    private void setupRecyclerView(@NonNull RecyclerView recyclerView, int col, boolean asc) {
+        mAdapter = new SimpleItemRecyclerViewAdapter(col, ascending);
+        recyclerView.setAdapter(mAdapter);
+        //recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(mDS.fetchAll(col, asc)));
     }
 
     @Override
@@ -152,10 +162,13 @@ public class ItemListActivity extends AppCompatActivity {
     public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
-        private final List<Item> mValues;
+        //private final List<Item> mValues;
 
-        public SimpleItemRecyclerViewAdapter(List<Item> items) {
-            mValues = items;
+        public SimpleItemRecyclerViewAdapter(int col, boolean ascending) {
+            //mValues = items;
+            openDB();
+            mArrayList = mDS.fetchAll(col, ascending);
+            closeDB();
         }
 
         @Override
@@ -167,9 +180,10 @@ public class ItemListActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
-            holder.mItem = mValues.get(position);
-            holder.mIdView.setText("" + mValues.get(position).id);
-            holder.mContentView.setText(mValues.get(position).getDescription());
+            holder.mItem = mArrayList.get(position);
+            holder.mIdView.setText("" + mArrayList.get(position).id);
+            holder.mContentView.setText(mArrayList.get(position).getDescription());
+            //mActivatedPosition = position;
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -185,12 +199,14 @@ public class ItemListActivity extends AppCompatActivity {
 
                         arguments.putString(ItemDetailFragment.ARG_ITEM_RATING, "" + holder.mItem.getRating());
 
-                        ItemDetailFragment fragment = new ItemDetailFragment();
+
+                        fragment = new ItemDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.item_detail_container, fragment)
                                 .commit();
 
+                        mActivatedPosition = holder.mItem.getId();
                         mActionMode = startActionMode(mActionModeCallback);
 
                     } else {
@@ -205,7 +221,7 @@ public class ItemListActivity extends AppCompatActivity {
 
                         intent.putExtra(ItemDetailFragment.ARG_ITEM_RATING, holder.mItem.getRating());
 
-                        context.startActivity(intent);
+                        startActivityForResult(intent, 0);
                     }
                 }
             });
@@ -213,7 +229,7 @@ public class ItemListActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return mValues.size();
+            return mArrayList.size();
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
@@ -253,14 +269,16 @@ public class ItemListActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case R.id.add:
-
-                View recyclerView = findViewById(R.id.item_list);
-
+                openDB();
+                //View recyclerView = findViewById(R.id.item_list);
                 Log.d("TAG", "add item");
                 mDS.insertItem("Scream", 1, "Horror movie");
+                mArrayList = mDS.fetchAll(0, ascending);
+                //assert recyclerView != null;
+                //setupRecyclerView((RecyclerView) recyclerView);
+                closeDB();
+                mAdapter.notifyDataSetChanged();
 
-                assert recyclerView != null;
-                setupRecyclerView((RecyclerView) recyclerView);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -299,11 +317,31 @@ public class ItemListActivity extends AppCompatActivity {
                 case R.id.add:
                     //shareCurrentItem();
                     //mode.finish(); // Action picked, so close the CAB
-                    //Log.d("TAG", "add item");
 
                     View recyclerView = findViewById(R.id.item_list);
-
                     mDS.insertItem("Scream", 1, "Horror movie");
+
+                    return true;
+                case R.id.delete_item:
+                    Log.d("TAG", "delete pushed in mtwopane");
+                    if(mArrayList.size() != 0) {
+                                                deletePost(mActivatedPosition);
+                        if(fragment != null)
+                            getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+                        mode.finish();
+                                            }
+                    return true;
+                case R.id.sort_title:
+                    Log.d("TAG", "SORT TITLE");
+
+                    return true;
+                case R.id.sort_id:
+                    Log.d("TAG", "SORT ID");
+
+                    return true;
+                case R.id.sort_rating:
+                    Log.d("TAG", "SORT RATING");
+
                     return true;
                 default:
                     return false;
@@ -316,6 +354,37 @@ public class ItemListActivity extends AppCompatActivity {
             mActionMode = null;
         }
     };
+
+        @Override
+        protected void onActivityResult(int requestCode, int resultCode, Intent data){
+
+            Log.d("TAG", "onActivityResult");
+
+                    if(requestCode == 0){
+                       if(resultCode == Activity.RESULT_OK){
+                           long itemId = data.getLongExtra(ItemDetailFragment.ARG_ITEM_ID, 0);
+                           deletePost(itemId);
+                       }
+                    }
+
+                    }
+
+                private void deletePost(long itemID){
+                openDB();
+
+                ListIterator<Item> listIter = mArrayList.listIterator();
+                while(listIter.hasNext()){
+                    Log.d("TAG", "deletePort itemID: " + itemID);
+                        if(listIter.next().getId() == itemID) {
+                            Log.d("TAG", "TRUE---------------------------");
+                            listIter.remove();
+                            break;
+                        }
+                    }
+                mAdapter.notifyDataSetChanged();
+                mDS.deleteItem(itemID);
+                closeDB();
+            }
 
     private void openDB(){
         mDS = new Datasource(this);

@@ -9,4 +9,7 @@
     <string name="sorting">Sorting</string>
     <string name="ascending_order">Ascending Order</string>
     <string name="rate">rate</string>
+    <string name="rating">rating</string>
+    <string name="_id">_id</string>
+    <string name="title">title</string>
 </resources>
