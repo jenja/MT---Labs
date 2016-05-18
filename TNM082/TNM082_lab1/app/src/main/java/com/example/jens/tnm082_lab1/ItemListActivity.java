@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,11 +24,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.TextView;
 
 
 import com.example.jens.tnm082_lab1.database.Datasource;
 import com.example.jens.tnm082_lab1.database.Item;
+import com.example.jens.tnm082_lab1.dummy.AddDialog;
 import com.example.jens.tnm082_lab1.dummy.DummyContent;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -45,7 +48,8 @@ import java.util.ListIterator;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class ItemListActivity extends AppCompatActivity {
+public class ItemListActivity extends AppCompatActivity
+                              implements AddDialog.AddDialogListener{
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -55,7 +59,7 @@ public class ItemListActivity extends AppCompatActivity {
     private ActionMode mActionMode;
     private Datasource mDS;
     private ArrayList<Item> mArrayList;
-    private SimpleItemRecyclerViewAdapter mAdapter;
+    public SimpleItemRecyclerViewAdapter mAdapter;
     private long mActivatedPosition;
     private ItemDetailFragment fragment;
     View recyclerView;
@@ -78,25 +82,6 @@ public class ItemListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
-        //TEST
-        //------------------------------------------------------
-        //openDB();
-        mDS = new Datasource(this);
-        mDS.open();
-        //mDS.insertItem("banan", 1, "gul");
-        //mDS.insertItem("ost", 2, "hål");
-        //closeDB();
-        //------------------------------------------------------
-
         View recyclerView = findViewById(R.id.item_list);
         assert recyclerView != null;
         setupRecyclerView((RecyclerView) recyclerView, 1, true);
@@ -116,7 +101,6 @@ public class ItemListActivity extends AppCompatActivity {
     private void setupRecyclerView(@NonNull RecyclerView recyclerView, int col, boolean asc) {
         mAdapter = new SimpleItemRecyclerViewAdapter(col, ascending);
         recyclerView.setAdapter(mAdapter);
-        //recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(mDS.fetchAll(col, asc)));
     }
 
     @Override
@@ -162,10 +146,10 @@ public class ItemListActivity extends AppCompatActivity {
     public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
-        //private final List<Item> mValues;
 
         public SimpleItemRecyclerViewAdapter(int col, boolean ascending) {
-            //mValues = items;
+
+            //fetch items from database and store in arraylist
             openDB();
             mArrayList = mDS.fetchAll(col, ascending);
             closeDB();
@@ -173,6 +157,7 @@ public class ItemListActivity extends AppCompatActivity {
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            //Inflate with layout for the items
             View view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_list_content, parent, false);
             return new ViewHolder(view);
@@ -183,22 +168,21 @@ public class ItemListActivity extends AppCompatActivity {
             holder.mItem = mArrayList.get(position);
             holder.mIdView.setText("" + mArrayList.get(position).id);
             holder.mContentView.setText(mArrayList.get(position).getDescription());
-            //mActivatedPosition = position;
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
+
                 @Override
                 public void onClick(View v) {
+
+                    Log.d("TAG", "Click view");
+
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
 
                         arguments.putString(ItemDetailFragment.ARG_ITEM_ID, "" + holder.mItem.getId());
-
                         arguments.putString(ItemDetailFragment.ARG_ITEM_TITLE, holder.mItem.getTitle());
-
                         arguments.putString(ItemDetailFragment.ARG_ITEM_DESCRIPTION, holder.mItem.getDescription());
-
                         arguments.putString(ItemDetailFragment.ARG_ITEM_RATING, "" + holder.mItem.getRating());
-
 
                         fragment = new ItemDetailFragment();
                         fragment.setArguments(arguments);
@@ -214,11 +198,8 @@ public class ItemListActivity extends AppCompatActivity {
                         Intent intent = new Intent(context, ItemDetailActivity.class);
 
                         intent.putExtra(ItemDetailFragment.ARG_ITEM_ID, holder.mItem.getId());
-
                         intent.putExtra(ItemDetailFragment.ARG_ITEM_TITLE, holder.mItem.getTitle());
-
                         intent.putExtra(ItemDetailFragment.ARG_ITEM_DESCRIPTION, holder.mItem.getDescription());
-
                         intent.putExtra(ItemDetailFragment.ARG_ITEM_RATING, holder.mItem.getRating());
 
                         startActivityForResult(intent, 0);
@@ -241,6 +222,7 @@ public class ItemListActivity extends AppCompatActivity {
             public ViewHolder(View view) {
                 super(view);
                 mView = view;
+                //Bind to the layout
                 mIdView = (TextView) view.findViewById(R.id.id);
                 mContentView = (TextView) view.findViewById(R.id.content);
             }
@@ -252,6 +234,7 @@ public class ItemListActivity extends AppCompatActivity {
         }
     }
 
+    //When you select an item in the toolbar
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -269,16 +252,21 @@ public class ItemListActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case R.id.add:
-                openDB();
-                //View recyclerView = findViewById(R.id.item_list);
                 Log.d("TAG", "add item");
-                mDS.insertItem("Scream", 1, "Horror movie");
-                mArrayList = mDS.fetchAll(0, ascending);
-                //assert recyclerView != null;
-                //setupRecyclerView((RecyclerView) recyclerView);
-                closeDB();
-                mAdapter.notifyDataSetChanged();
+                addItemDialog();
+                Log.d("TAG", "added item");
+                return true;
 
+            case R.id.help:
+                Log.d("TAG", "help");
+                return true;
+            case R.id.sorting:
+                Log.d("TAG", "sorting");
+                return true;
+            case R.id.ascending_order:
+                Log.d("TAG", "ascending");
+                if(item.isCheckable()) item.setChecked(true);
+                else item.setChecked(false);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -315,34 +303,22 @@ public class ItemListActivity extends AppCompatActivity {
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.add:
-                    //shareCurrentItem();
-                    //mode.finish(); // Action picked, so close the CAB
 
-                    View recyclerView = findViewById(R.id.item_list);
+                    openDB();
                     mDS.insertItem("Scream", 1, "Horror movie");
-
+                    closeDB();
+                    mAdapter.notifyDataSetChanged();
                     return true;
                 case R.id.delete_item:
                     Log.d("TAG", "delete pushed in mtwopane");
                     if(mArrayList.size() != 0) {
-                                                deletePost(mActivatedPosition);
+                        deletePost(mActivatedPosition);
                         if(fragment != null)
                             getSupportFragmentManager().beginTransaction().remove(fragment).commit();
                         mode.finish();
                                             }
                     return true;
-                case R.id.sort_title:
-                    Log.d("TAG", "SORT TITLE");
 
-                    return true;
-                case R.id.sort_id:
-                    Log.d("TAG", "SORT ID");
-
-                    return true;
-                case R.id.sort_rating:
-                    Log.d("TAG", "SORT RATING");
-
-                    return true;
                 default:
                     return false;
             }
@@ -393,6 +369,28 @@ public class ItemListActivity extends AppCompatActivity {
 
     private void closeDB(){
         mDS.close();
+    }
+
+    public void addItemDialog() {
+        DialogFragment dialog = new AddDialog();
+        dialog.show(getSupportFragmentManager(), "additem");
+    }
+
+    public void onDialogPositiveClick(DialogFragment dialog, String mName, String mDesc) {
+        // User touched the dialog's positive button
+
+        //Add the user input from addDialog to the datasource
+        mDS = new Datasource(this);
+        mDS.open();
+        mDS.insertItem(mName, 1, mDesc);
+        mArrayList = mDS.fetchAll(0, ascending);
+        mDS.close();
+        mAdapter.notifyDataSetChanged();
+    }
+
+    public void onDialogNegativeClick(DialogFragment dialog) {
+        // User touched the dialog's negative button
+
     }
 
 }
