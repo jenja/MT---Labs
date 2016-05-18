@@ -3,6 +3,7 @@ package com.example.jens.tnm082_lab1;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.nfc.Tag;
 import android.os.Bundle;
@@ -24,7 +25,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 
@@ -32,6 +35,8 @@ import com.example.jens.tnm082_lab1.database.Datasource;
 import com.example.jens.tnm082_lab1.database.Item;
 import com.example.jens.tnm082_lab1.dummy.AddDialog;
 import com.example.jens.tnm082_lab1.dummy.DummyContent;
+import com.example.jens.tnm082_lab1.dummy.EditDialog;
+import com.example.jens.tnm082_lab1.dummy.SortDialog;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -49,7 +54,8 @@ import java.util.ListIterator;
  * item details side-by-side using two vertical panes.
  */
 public class ItemListActivity extends AppCompatActivity
-                              implements AddDialog.AddDialogListener{
+                              implements AddDialog.AddDialogListener,
+                                         SortDialog.SortDialogListener{
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -67,6 +73,13 @@ public class ItemListActivity extends AppCompatActivity
     private boolean asc;
 
     private boolean ascending = true;
+    private boolean descending = false;
+
+    private int sort = 0;
+
+    private long itemID;
+
+    public static final String PREFS_NAME = "MyPrefsFile";
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -78,13 +91,19 @@ public class ItemListActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_list);
 
+        // Restore preferences
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        sort = settings.getInt("sortSettings", 0);
+        ascending = settings.getBoolean("ascendingSettings", false);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
         View recyclerView = findViewById(R.id.item_list);
         assert recyclerView != null;
-        setupRecyclerView((RecyclerView) recyclerView, 1, true);
+        setupRecyclerView((RecyclerView) recyclerView, sort, true);
+
 
         if (findViewById(R.id.item_detail_container) != null) {
             // The detail container view will be present only in the
@@ -96,6 +115,13 @@ public class ItemListActivity extends AppCompatActivity
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        menu.findItem(R.id.ascending_order).setChecked(ascending);
+        return true;
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView, int col, boolean asc) {
@@ -141,6 +167,16 @@ public class ItemListActivity extends AppCompatActivity
         );
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
+
+        // We need an Editor object to make preference changes.
+        // All objects are from android.context.Context
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putInt("sortSettings", sort);
+        editor.putBoolean("ascendingSettings", ascending);
+
+        // Commit the edits!
+        editor.commit();
     }
 
     public class SimpleItemRecyclerViewAdapter
@@ -163,18 +199,36 @@ public class ItemListActivity extends AppCompatActivity
             return new ViewHolder(view);
         }
 
+        public class ViewHolder extends RecyclerView.ViewHolder {
+            public final View mView;
+            public final TextView mIdView;
+            public final TextView mTitleView;
+            public Item mItem;
+
+            public ViewHolder(View view) {
+                super(view);
+                mView = view;
+                //Bind to the layout
+                mIdView = (TextView) view.findViewById(R.id.id);
+                mTitleView = (TextView) view.findViewById(R.id.name);
+            }
+
+            @Override
+            public String toString() {
+                return super.toString() + " '" + mTitleView.getText() + "'";
+            }
+        }
+
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.mItem = mArrayList.get(position);
             holder.mIdView.setText("" + mArrayList.get(position).id);
-            holder.mContentView.setText(mArrayList.get(position).getDescription());
+            holder.mTitleView.setText(mArrayList.get(position).getTitle());
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
-
-                    Log.d("TAG", "Click view");
 
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
@@ -212,26 +266,6 @@ public class ItemListActivity extends AppCompatActivity
         public int getItemCount() {
             return mArrayList.size();
         }
-
-        public class ViewHolder extends RecyclerView.ViewHolder {
-            public final View mView;
-            public final TextView mIdView;
-            public final TextView mContentView;
-            public Item mItem;
-
-            public ViewHolder(View view) {
-                super(view);
-                mView = view;
-                //Bind to the layout
-                mIdView = (TextView) view.findViewById(R.id.id);
-                mContentView = (TextView) view.findViewById(R.id.content);
-            }
-
-            @Override
-            public String toString() {
-                return super.toString() + " '" + mContentView.getText() + "'";
-            }
-        }
     }
 
     //When you select an item in the toolbar
@@ -252,21 +286,29 @@ public class ItemListActivity extends AppCompatActivity
 
         switch (item.getItemId()) {
             case R.id.add:
-                Log.d("TAG", "add item");
                 addItemDialog();
-                Log.d("TAG", "added item");
                 return true;
-
             case R.id.help:
                 Log.d("TAG", "help");
                 return true;
             case R.id.sorting:
                 Log.d("TAG", "sorting");
+                sortItemDialog();
                 return true;
             case R.id.ascending_order:
                 Log.d("TAG", "ascending");
-                if(item.isCheckable()) item.setChecked(true);
-                else item.setChecked(false);
+
+                if(item.isChecked()) {
+                    item.setChecked(false);
+                    ascending = false;
+                    sortList(0,ascending);
+                }
+                else {
+                    item.setChecked(true);
+                    ascending = true;
+                    sortList(0,ascending);
+                }
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -303,20 +345,18 @@ public class ItemListActivity extends AppCompatActivity
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.add:
-
-                    openDB();
-                    mDS.insertItem("Scream", 1, "Horror movie");
-                    closeDB();
-                    mAdapter.notifyDataSetChanged();
+                    addItemDialog();
                     return true;
                 case R.id.delete_item:
-                    Log.d("TAG", "delete pushed in mtwopane");
                     if(mArrayList.size() != 0) {
                         deletePost(mActivatedPosition);
                         if(fragment != null)
                             getSupportFragmentManager().beginTransaction().remove(fragment).commit();
                         mode.finish();
                                             }
+                    return true;
+
+                case R.id.edit_item:
                     return true;
 
                 default:
@@ -331,36 +371,33 @@ public class ItemListActivity extends AppCompatActivity
         }
     };
 
-        @Override
-        protected void onActivityResult(int requestCode, int resultCode, Intent data){
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
 
-            Log.d("TAG", "onActivityResult");
+        if(requestCode == 0){
+           if(resultCode == Activity.RESULT_OK){
+               long itemId = data.getLongExtra(ItemDetailFragment.ARG_ITEM_ID, 0);
+               deletePost(itemId);
+           }
+        }
 
-                    if(requestCode == 0){
-                       if(resultCode == Activity.RESULT_OK){
-                           long itemId = data.getLongExtra(ItemDetailFragment.ARG_ITEM_ID, 0);
-                           deletePost(itemId);
-                       }
-                    }
+    }
 
-                    }
+    private void deletePost(long itemID){
+        openDB();
 
-                private void deletePost(long itemID){
-                openDB();
-
-                ListIterator<Item> listIter = mArrayList.listIterator();
-                while(listIter.hasNext()){
-                    Log.d("TAG", "deletePort itemID: " + itemID);
-                        if(listIter.next().getId() == itemID) {
-                            Log.d("TAG", "TRUE---------------------------");
-                            listIter.remove();
-                            break;
-                        }
-                    }
-                mAdapter.notifyDataSetChanged();
-                mDS.deleteItem(itemID);
-                closeDB();
+        ListIterator<Item> listIter = mArrayList.listIterator();
+        while(listIter.hasNext()){
+                if(listIter.next().getId() == itemID) {
+                    listIter.remove();
+                    break;
+                }
             }
+
+        mAdapter.notifyDataSetChanged();
+        mDS.deleteItem(itemID);
+        closeDB();
+    }
 
     private void openDB(){
         mDS = new Datasource(this);
@@ -376,7 +413,12 @@ public class ItemListActivity extends AppCompatActivity
         dialog.show(getSupportFragmentManager(), "additem");
     }
 
-    public void onDialogPositiveClick(DialogFragment dialog, String mName, String mDesc) {
+    public void sortItemDialog() {
+        DialogFragment dialog = new SortDialog();
+        dialog.show(getSupportFragmentManager(), "sortitem");
+    }
+
+    public void onAddDialogPositiveClick(DialogFragment dialog, String mName, String mDesc) {
         // User touched the dialog's positive button
 
         //Add the user input from addDialog to the datasource
@@ -388,9 +430,29 @@ public class ItemListActivity extends AppCompatActivity
         mAdapter.notifyDataSetChanged();
     }
 
-    public void onDialogNegativeClick(DialogFragment dialog) {
+    public void onAddDialogNegativeClick(DialogFragment dialog) {
         // User touched the dialog's negative button
 
+    }
+
+    public void onSortDialogPositiveClick(DialogFragment dialog, int sortId) {
+        // User touched the dialog's positive button
+        sort = sortId;
+        sortList(sort,ascending);
+    }
+
+    public void onSortDialogNegativeClick(DialogFragment dialog) {
+        // User touched the dialog's negative button
+
+    }
+
+    public void sortList(int id, boolean ascending){
+
+        mDS = new Datasource(this);
+        mDS.open();
+        mArrayList = mDS.fetchAll(id, ascending);
+        mDS.close();
+        mAdapter.notifyDataSetChanged();
     }
 
 }

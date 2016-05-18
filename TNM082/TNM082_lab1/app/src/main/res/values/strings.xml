@@ -7,8 +7,10 @@
     <string name="add">Add</string>
     <string name="cancel">Cancel</string>
     <string name="add_item">Add an item</string>
+    <string name="edit_item">Edit an item</string>
     <string name="item_name">Item name</string>
     <string name="item_description">Item description</string>
+    <string name="dialog_sort_title">Sort your list</string>
     <string name="options">Options</string>
     <string name="sorting">Sorting</string>
     <string name="ascending_order">Ascending Order</string>

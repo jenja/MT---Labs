@@ -17,20 +17,20 @@ import com.example.jens.tnm082_lab1.database.Datasource;
 /**
  * Created by Jens on 2016-05-18.
  */
-public class AddDialog extends DialogFragment{
+public class EditDialog extends DialogFragment{
 
     private Datasource mDS;
 
     /* The activity that creates an instance of this dialog fragment must
 * implement this interface in order to receive event callbacks.
 * Each method passes the DialogFragment in case the host needs to query it. */
-    public interface AddDialogListener {
-        public void onAddDialogPositiveClick(DialogFragment dialog, String mName, String mDesc);
-        public void onAddDialogNegativeClick(DialogFragment dialog);
+    public interface EditDialogListener {
+        public void onEditDialogPositiveClick(DialogFragment dialog, String mName, String mDesc);
+        public void onEditDialogNegativeClick(DialogFragment dialog);
     }
 
     // Use this instance of the interface to deliver action events
-    AddDialogListener mListener;
+    EditDialogListener mListener;
 
     // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
     @Override
@@ -39,7 +39,7 @@ public class AddDialog extends DialogFragment{
         // Verify that the host activity implements the callback interface
         try {
             // Instantiate the NoticeDialogListener so we can send events to the host
-            mListener = (AddDialogListener) activity;
+            mListener = (EditDialogListener) activity;
         } catch (ClassCastException e) {
             // The activity doesn't implement the interface, throw exception
             throw new ClassCastException(activity.toString()
@@ -54,28 +54,29 @@ public class AddDialog extends DialogFragment{
 
         // Build the dialog and set up the button click handlers
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        final View v_iew=inflater.inflate(R.layout.dialog_add, null) ;
+        final View v_iew=inflater.inflate(R.layout.dialog_edit, null) ;
         builder.setView(v_iew)
-                .setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.edit, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
 
                         //Get user input
-                        EditText uName = (EditText) v_iew.findViewById(R.id.dialog_name);
-                        EditText uDesc = (EditText) v_iew.findViewById(R.id.dialog_desc);
+                        EditText uName = (EditText) v_iew.findViewById(R.id.edit_dialog_name);
+                        EditText uDesc = (EditText) v_iew.findViewById(R.id.edit_dialog_desc);
                         String mName = uName.getText().toString();
                         String mDesc = uDesc.getText().toString();
                         // Send the positive button event back to the host activity
-                        mListener.onAddDialogPositiveClick(AddDialog.this, mName,mDesc);
+                        mListener.onEditDialogPositiveClick(EditDialog.this, mName,mDesc);
                     }
                 })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // Send the negative button event back to the host activity
-                        mListener.onAddDialogNegativeClick(AddDialog.this);
+                        mListener.onEditDialogNegativeClick(EditDialog.this);
                     }
                 });
         return builder.create();
     }
 }
+
 
 

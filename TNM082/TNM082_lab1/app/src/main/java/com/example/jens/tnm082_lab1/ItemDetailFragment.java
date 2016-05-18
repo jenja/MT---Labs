@@ -11,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.example.jens.tnm082_lab1.database.Item;
@@ -35,7 +36,6 @@ public class ItemDetailFragment extends Fragment {
     /**
      * The dummy content this fragment is presenting.
      */
-    //private DummyContent.DummyItem mItem;
 
     String ItemId = "failed to load";
     String ItemTitle = "failed to load";
@@ -55,18 +55,6 @@ public class ItemDetailFragment extends Fragment {
 
         hasOptionsMenu();
 
-        /*if (getArguments().containsKey(ARG_ITEM_ID)) {
-            //mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
-
-            ItemId = getArguments().getString(ARG_ITEM_ID);
-
-            Activity activity = this.getActivity();
-            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
-            if (appBarLayout != null) {
-                appBarLayout.setTitle(mItem.content);
-            }
-        }*/
-
         if(getArguments().containsKey(ARG_ITEM_ID)){ItemTitle = getArguments().getString(ARG_ITEM_ID);}
         if(getArguments().containsKey(ARG_ITEM_TITLE)){ItemTitle = getArguments().getString(ARG_ITEM_TITLE);}
         if(getArguments().containsKey(ARG_ITEM_DESCRIPTION)){ItemDescription= getArguments().getString(ARG_ITEM_DESCRIPTION);}
@@ -77,27 +65,6 @@ public class ItemDetailFragment extends Fragment {
         if (appBarLayout != null) {
             appBarLayout.setTitle(ItemTitle);
         }
-        /*
-        mItem = new Item();
-
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-
-            Long argID = getArguments().getLong(ARG_ITEM_ID, 0);
-            String argTitle = getArguments().getString(ARG_ITEM_TITLE);
-            String argDescription = getArguments().getString(ARG_ITEM_DESCRIPTION);
-            int argRating = getArguments().getInt(ARG_ITEM_RATING);
-
-            mItem.setId(argID);
-            mItem.setTitle(argTitle);
-            mItem.setDescription(argDescription);
-            mItem.setRating(argRating);
-
-            Activity activity = this.getActivity();
-            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
-            if (appBarLayout != null) {
-                appBarLayout.setTitle(ItemTitle);
-            }
-        }*/
     }
 
     @Override
@@ -113,36 +80,4 @@ public class ItemDetailFragment extends Fragment {
         return rootView;
     }
 
-    /*@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.optionsmenu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.help:
-                helpList();
-                return true;
-            case R.id.sorting:
-                sortList();
-                return true;
-            case R.id.ascending_order:
-                sortAscending();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    //Implement
-
-    public void helpList() {}
-
-    public void sortList() {}
-
-    public void sortAscending() {}*/
 }

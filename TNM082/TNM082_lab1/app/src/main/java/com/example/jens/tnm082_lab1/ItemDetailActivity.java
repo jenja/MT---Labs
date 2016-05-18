@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -14,6 +15,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
+import android.widget.TextView;
+
+import com.example.jens.tnm082_lab1.database.Datasource;
+import com.example.jens.tnm082_lab1.dummy.AddDialog;
+import com.example.jens.tnm082_lab1.dummy.EditDialog;
 
 /**
  * An activity representing a single Item detail screen. This
@@ -21,9 +27,10 @@ import android.view.MenuItem;
  * item details are presented side-by-side with a list of items
  * in a {@link ItemListActivity}.
  */
-public class ItemDetailActivity extends AppCompatActivity {
+public class ItemDetailActivity extends AppCompatActivity implements EditDialog.EditDialogListener{
 
     private long itemID;
+    private Datasource mDS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,15 +38,6 @@ public class ItemDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_item_detail);
         Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own detail action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
@@ -62,11 +60,7 @@ public class ItemDetailActivity extends AppCompatActivity {
             Bundle arguments = new Bundle();
 
             //Send items
-            /*arguments.putString(ItemDetailFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(ItemDetailFragment.ARG_ITEM_ID));
-            */
             itemID = getIntent().getLongExtra(ItemDetailFragment.ARG_ITEM_ID, 0);
-                        Log.d("TAG", "1: itemId is: " + String.valueOf(itemID));
 
             arguments.putLong(ItemDetailFragment.ARG_ITEM_ID, itemID);
 
@@ -90,27 +84,27 @@ public class ItemDetailActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == android.R.id.home) {
-            // This ID represents the Home or Up button. In the case of this
-            // activity, the Up button is shown. Use NavUtils to allow users
-            // to navigate up one level in the application structure. For
-            // more details, see the Navigation pattern on Android Design:
-            //
-            // http://developer.android.com/design/patterns/navigation.html#up-vs-back
-            //
-            NavUtils.navigateUpTo(this, new Intent(this, ItemListActivity.class));
-            return true;
-        }
 
-        if(id == R.id.delete_item){
-            Log.d("TAG", "delete is pushed");
-            Log.d("TAG", "2: itemId is: " + String.valueOf(itemID));
-            Intent intent = new Intent();
-            intent.putExtra(ItemDetailFragment.ARG_ITEM_ID, itemID);
-            setResult(Activity.RESULT_OK, intent);
-            finish();
-            deleteItem();
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                // This ID represents the Home or Up button. In the case of this
+                // activity, the Up button is shown. Use NavUtils to allow users
+                // to navigate up one level in the application structure. For
+                // more details, see the Navigation pattern on Android Design:
+                //
+                // http://developer.android.com/design/patterns/navigation.html#up-vs-back
+                //
+                NavUtils.navigateUpTo(this, new Intent(this, ItemListActivity.class));
+                return true;
+            case R.id.delete_item:
+                Intent intent = new Intent();
+                intent.putExtra(ItemDetailFragment.ARG_ITEM_ID, itemID);
+                setResult(Activity.RESULT_OK, intent);
+                finish();
+                return true;
+            case R.id.edit_item:
+                editItemDialog();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -122,12 +116,25 @@ public class ItemDetailActivity extends AppCompatActivity {
         return true;
     }
 
-    //Implement
+    public void editItemDialog() {
+        DialogFragment dialog = new EditDialog();
+        dialog.show(getSupportFragmentManager(), "edititem");
+    }
 
-    public void deleteItem() {
+    public void onEditDialogNegativeClick(DialogFragment dialog) {
+        // User touched the dialog's negative button
 
     }
 
-    public void editItem() {}
+    public void onEditDialogPositiveClick(DialogFragment dialog, String mName, String mDesc) {
+        // User touched the dialog's positive button
+
+        //Add the user input from addDialog to the datasource
+        mDS = new Datasource(this);
+        mDS.open();
+        mDS.updateItem(itemID, mName, 1, mDesc);
+        mDS.close();
+        finish();
+    }
 
 }
